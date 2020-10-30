@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+			}
+			body {
+				background-color: black;
+			}
+			#pm {
+				position: relative;
+				box-shadow: 0 0 40px red;
+				background: black;
+			}
+			.snake {
+				width: 10px;
+				height: 10px;
+				position: absolute;
+				left: 0;
+				top: 0;
+			}
+			.head {
+				background-color: red;
+			}
+			.body {
+				background-color: greenyellow;
+			}
+
+			.egg {
+				width: 10px;
+				height: 10px;
+				background-color: magenta;
+				border-radius: 50%;
+				position: absolute;
+			}
+		</style>
+		<body>
+			<div id="pm">
+				<div class="snake head"></div>
+				<div class="snake body"></div>
+				<div class="snake body"></div>
+			</div>
+		</body>
+	</head>
+	<body>
+		<script>
+			var pm //贪吃蛇活动范围
+			var ck_w //活动范围的宽
+			var ck_h //活动范围的高
+			var establishEgg //蛇蛋
+			//蛇蛋坐标
+			var egg_x = 0
+			var egg_y = 0
+			//获取蛇头
+			var head = document.querySelector('.head')
+			//获取蛇的所有节点
+			var snakes = document.querySelectorAll('.snake')
+			snakes = [].slice.call(snakes)
+
+			//获取蛇身的每个坐标
+			var bodys = []
+
+			//移动定时器
+			var snake_t = null
+			//蛇移动的方向
+			var direction = 'right'
+			var x = 0,
+				y = 0
+
+			//贪吃蛇可移动范围窗口初始化
+			function inpm() {
+				pm = document.querySelector('#pm')
+				ck_w = parseInt((window.innerWidth - 200) / 10) * 10
+				ck_h = parseInt((window.innerHeight - 200) / 10) * 10
+				pm.style.width = ck_w + 'px'
+				pm.style.height = ck_h + 'px'
+
+				//让游戏窗口在浏览器窗口居中
+				pm.style.marginLeft = (window.innerWidth - ck_w) / 2 + 'px'
+				pm.style.marginTop = (window.innerHeight - ck_h) / 2 + 'px'
+			}
+			inpm()
+
+			//创建随机的蛋
+			function egg() {
+				egg_x = parseInt((Math.random() * (ck_w - 10)) / 10) * 10
+				egg_y = parseInt((Math.random() * (ck_h - 10)) / 10) * 10
+				//创建蛇蛋
+				establishEgg = document.createElement('div')
+				establishEgg.className = 'egg'
+				establishEgg.style.top = egg_y + 'px'
+				establishEgg.style.left = egg_x + 'px'
+				pm.appendChild(establishEgg)
+			}
+			egg()
+
+			//移动
+			snake_t = setInterval(function () {
+				//移动坐标
+				switch (direction) {
+					case 'right':
+						x = x + 10
+						break
+					case 'left':
+						x = x - 10
+						break
+					case 'top':
+						y = y - 10
+						break
+					case 'bottom':
+						y = y + 10
+						break
+				}
+				//判断有没有移出屏幕
+				if (x > ck_w - 10) {
+					x = 0
+				} else if (x < 0) {
+					x = ck_w - 10
+				}
+				if (y > ck_h - 10) {
+					y = 0
+				} else if (y < 0) {
+					y = ck_h - 10
+				}
+
+				bodys = []
+				//蛇的身子跟着头
+				for (var i = snakes.length - 1; i > 0; i--) {
+					var _left = snakes[i - 1].style.left
+					var _top = snakes[i - 1].style.top
+					snakes[i].style.left = _left
+					snakes[i].style.top = _top
+					bodys.push({
+						x: parseInt(_left),
+						y: parseInt(_top),
+					})
+				}
+
+				//蛇头位置改变
+				head.style.left = x + 'px'
+				head.style.top = y + 'px'
+
+				//判断头有没有碰到蛋
+				if (x == egg_x && y == egg_y) {
+					//多一块身体
+					var _body = document.createElement('div')
+					_body.className = 'snake body'
+					_body.style.top = y + 'px'
+					_body.style.left = x + 'px'
+					//添加到页面中
+					pm.appendChild(_body)
+					//将新创建的身体添加到蛇身体中
+					snakes.push(_body)
+					//删除被吃掉的蛋
+					establishEgg.parentNode.removeChild(establishEgg)
+					//重新随机生成一个蛋
+					egg()
+				}
+
+				//判断是否吃到自己
+				var res = bodys.some(function (item) {
+					return item.x == x && item.y == y
+				})
+				if (res) {
+					clearInterval(snake_t)
+					alert('游戏结束')
+				}
+			}, 100)
+
+			//方向盘
+			document.onkeydown = function (e) {
+				var e = e || window.event
+				var code = e.keyCode || e.which
+				switch (code) {
+					case 37:
+						if (direction == 'rihjt') {
+							break
+						}
+						direction = 'left'
+						break
+					case 38:
+						if (direction == 'bottom') {
+							break
+						}
+						direction = 'top'
+						break
+					case 39:
+						if (direction == 'left') {
+							break
+						}
+						direction = 'right'
+						break
+					case 40: {
+						if (direction == 'top') {
+							break
+						}
+						direction = 'bottom'
+						break
+					}
+				}
+			}
+		</script>
+	</body>
+</html>
